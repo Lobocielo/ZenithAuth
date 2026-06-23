@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Zenith Auth - Panel de autenticación y gestión de licencias">
+  <title>Zenith Auth — Login</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    /* ─── Login Page Specific ──────────────────────────── */
+    .login-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      padding: 48px 40px;
+      text-align: center;
+      position: relative;
+    }
+
+    .login-card::before {
+      content: '';
+      position: absolute;
+      top: -1px;
+      left: 30%;
+      right: 30%;
+      height: 2px;
+      background: var(--accent-gradient);
+      border-radius: 2px;
+    }
+
+    .logo-container {
+      margin-bottom: 40px;
+    }
+
+    .logo-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 16px;
+      border-radius: var(--radius-lg);
+      background: var(--accent-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 900;
+      box-shadow: 0 8px 30px rgba(0, 210, 255, 0.25);
+      animation: logoPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes logoPulse {
+      0%, 100% { box-shadow: 0 8px 30px rgba(0, 210, 255, 0.25); }
+      50% { box-shadow: 0 8px 40px rgba(0, 210, 255, 0.4), 0 0 60px rgba(123, 97, 255, 0.15); }
+    }
+
+    .logo-title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    .logo-subtitle {
+      color: var(--text-muted);
+      font-size: 13px;
+      letter-spacing: 1px;
+      margin-top: 6px;
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-wrapper .input {
+      padding-left: 48px;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 16px;
+      transition: var(--transition);
+      pointer-events: none;
+    }
+
+    .input-wrapper .input:focus + .input-icon,
+    .input-wrapper .input:not(:placeholder-shown) + .input-icon {
+      color: var(--accent-primary);
+    }
+
+    .login-btn {
+      margin-top: 8px;
+      padding: 16px;
+      font-size: 16px;
+      letter-spacing: 1px;
+    }
+
+    .login-btn.loading {
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    .error-msg {
+      color: var(--accent-danger);
+      font-size: 13px;
+      padding: 10px 16px;
+      background: rgba(255, 51, 102, 0.08);
+      border: 1px solid rgba(255, 51, 102, 0.15);
+      border-radius: var(--radius-sm);
+      display: none;
+      animation: shake 0.4s ease-in-out;
+    }
+
+    .error-msg.visible {
+      display: block;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      75% { transform: translateX(8px); }
+    }
+
+    .footer-text {
+      margin-top: 32px;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    .footer-text a {
+      color: var(--accent-primary);
+      text-decoration: none;
+      transition: var(--transition-fast);
+    }
+
+    .footer-text a:hover {
+      text-decoration: underline;
+    }
+
+    /* ─── Floating particles ──────────────────────────── */
+    .particles {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .particle {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      background: var(--accent-primary);
+      border-radius: 50%;
+      opacity: 0;
+      animation: particleFloat linear infinite;
+    }
+
+    @keyframes particleFloat {
+      0% { opacity: 0; transform: translateY(100vh) scale(0); }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.2; }
+      100% { opacity: 0; transform: translateY(-10vh) scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-mesh"></div>
+  <div class="grid-overlay"></div>
+  <div class="particles" id="particles"></div>
+
+  <div class="login-container">
+    <div class="login-card glass-card">
+      <div class="logo-container">
+        <div class="logo-icon">Z</div>
+        <h1 class="logo-title gradient-text">ZENITH</h1>
+        <p class="logo-subtitle">Sistema de Autenticación</p>
+      </div>
+
+      <div class="error-msg" id="errorMsg"></div>
+
+      <form class="login-form" id="loginForm">
+        <div class="input-wrapper">
+          <input type="text" class="input" id="username" name="username" placeholder="Usuario" required autocomplete="username">
+          <span class="input-icon">👤</span>
+        </div>
+        <div class="input-wrapper">
+          <input type="password" class="input" id="password" name="password" placeholder="Contraseña" required autocomplete="current-password">
+          <span class="input-icon">🔒</span>
+        </div>
+        <button type="submit" class="btn btn-primary login-btn" id="loginBtn">
+          <span id="loginText">ACCEDER</span>
+          <div class="spinner" id="loginSpinner" style="display:none;"></div>
+        </button>
+      </form>
+
+      <p class="footer-text">
+        Panel de administración exclusivo.<br>
+        <span style="opacity: 0.5;">Zenith Auth v2.0</span>
+      </p>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script>
+    // ─── Particles ──────────────────────────────────────
+    const particlesContainer = document.getElementById('particles');
+    for (let i = 0; i < 30; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.animationDuration = (6 + Math.random() * 10) + 's';
+      p.style.animationDelay = Math.random() * 8 + 's';
+      p.style.width = p.style.height = (2 + Math.random() * 3) + 'px';
+      if (Math.random() > 0.5) p.style.background = '#7b61ff';
+      particlesContainer.appendChild(p);
+    }
+
+    // ─── Toast ──────────────────────────────────────────
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `
+        <span class="toast-message">${message}</span>
+        <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.animation = 'fadeOut 0.3s ease forwards';
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // ─── Login Form ─────────────────────────────────────
+    const API_BASE = '/api';
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('loginBtn');
+      const spinner = document.getElementById('loginSpinner');
+      const text = document.getElementById('loginText');
+      const errorEl = document.getElementById('errorMsg');
+
+      errorEl.classList.remove('visible');
+      btn.classList.add('loading');
+      text.textContent = 'VERIFICANDO...';
+      spinner.style.display = 'block';
+
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await fetch(`${API_BASE}/admin?action=login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+        });
+        const data = await res.json();
+
+        if (data.status === 'success') {
+          localStorage.setItem('zenith_token', data.token);
+          localStorage.setItem('zenith_role', data.role);
+          showToast('¡Bienvenido! Redirigiendo...', 'success');
+          setTimeout(() => window.location.href = '/dashboard', 800);
+        } else {
+          errorEl.textContent = data.message;
+          errorEl.classList.add('visible');
+          showToast(data.message, 'error');
+        }
+      } catch (err) {
+        errorEl.textContent = 'Error de conexión con el servidor.';
+        errorEl.classList.add('visible');
+        showToast('Error de red. Revisa tu conexión.', 'error');
+      } finally {
+        btn.classList.remove('loading');
+        text.textContent = 'ACCEDER';
+        spinner.style.display = 'none';
+      }
+    });
+
+    // ─── Auto redirect if already logged in ─────────────
+    if (localStorage.getItem('zenith_token')) {
+      window.location.href = '/dashboard';
+    }
+  </script>
+</body>
+</html>
